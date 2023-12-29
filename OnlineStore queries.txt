@@ -1,0 +1,418 @@
+Enter password: ****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 10
+Server version: 8.0.35 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE OnlineStore;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> USE OnlineStore;
+Database changed
+mysql>
+mysql> CREATE TABLE Categories (
+    ->     category_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     name VARCHAR(255) NOT NULL,
+    ->     description TEXT
+    -> );
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> CREATE TABLE Products (
+    ->     product_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     name VARCHAR(255) NOT NULL,
+    ->     description TEXT,
+    ->     price DECIMAL(10, 2) NOT NULL,
+    ->     availability BOOLEAN NOT NULL,
+    ->     category_id INT,
+    ->     FOREIGN KEY (category_id) REFERENCES Categories(category_id)
+    -> );
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> CREATE TABLE Customers (
+    ->     customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     name VARCHAR(255) NOT NULL,
+    ->     address TEXT,
+    ->     email VARCHAR(255),
+    ->     gender VARCHAR(10),
+    ->     age INT,
+    ->     location VARCHAR(255)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> CREATE TABLE Orders (
+    ->     order_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     customer_id INT,
+    ->     order_date DATE NOT NULL,
+    ->     status VARCHAR(50),
+    ->     total_amount DECIMAL(10, 2),
+    ->     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+    -> );
+Query OK, 0 rows affected (0.16 sec)
+
+mysql> CREATE TABLE OrderDetails (
+    ->     order_id INT,
+    ->     product_id INT,
+    ->     quantity INT,
+    ->     PRIMARY KEY (order_id, product_id),
+    ->     FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+    ->     FOREIGN KEY (product_id) REFERENCES Products(product_id)
+    -> );
+Query OK, 0 rows affected (0.18 sec)
+
+mysql> CREATE TABLE ShippingInfo (
+    ->     shipping_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     order_id INT UNIQUE,
+    ->     label TEXT,
+    ->     tracking_number VARCHAR(255),
+    ->     FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+    -> );
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> CREATE TABLE Inventory (
+    ->     product_id INT,
+    ->     quantity INT,
+    ->     PRIMARY KEY (product_id),
+    ->     FOREIGN KEY (product_id) REFERENCES Products(product_id)
+    -> );
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> SHOW TABLES;
++-----------------------+
+| Tables_in_onlinestore |
++-----------------------+
+| categories            |
+| customers             |
+| inventory             |
+| orderdetails          |
+| orders                |
+| products              |
+| shippinginfo          |
++-----------------------+
+7 rows in set (0.01 sec)
+
+mysql> INSERT INTO Categories (name, description) VALUES
+    -> ('Electronics', 'Electronic devices and gadgets'),
+    -> ('Clothing', 'Apparel and accessories'),
+    -> ('Home Goods', 'Furniture and decor'),
+    -> ('Books', 'Literary and educational materials'),
+    -> ('Sports', 'Sports equipment and apparel'),
+    -> ('Beauty', 'Beauty and personal care products'),
+    -> ('Toys', 'Toys and games for children'),
+    -> ('Groceries', 'Food and household essentials'),
+    -> ('Automotive', 'Automotive parts and accessories'),
+    -> ('Gardening', 'Gardening tools and plants');
+Query OK, 10 rows affected (0.04 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Products (name, description, price, availability, category_id) VALUES
+    -> ('Smartphone', 'High-end mobile device', 699.99, TRUE, 1),
+    -> ('Jeans', 'Blue denim jeans', 49.99, TRUE, 2),
+    -> ('Sofa', 'Comfortable leather sofa', 899.99, TRUE, 3),
+    -> ('Thriller Novel', 'Exciting thriller book', 15.99, TRUE, 4),
+    -> ('Running Shoes', 'Durable athletic shoes', 89.99, TRUE, 5),
+    -> ('Shampoo', 'Organic hair shampoo', 12.99, TRUE, 6),
+    -> ('Lego Set', '1000-piece Lego set', 59.99, TRUE, 7),
+    -> ('Cereal', 'Healthy breakfast cereal', 4.99, TRUE, 8),
+    -> ('Car Tires', 'Set of 4 all-season tires', 299.99, TRUE, 9),
+    -> ('Garden Shovel', 'Sturdy metal shovel', 29.99, TRUE, 10);
+Query OK, 10 rows affected (0.02 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Customers (name, address, email, gender, age, location) VALUES
+    -> ('John Doe', '123 Maple Street', 'johndoe@example.com', 'Male', 30, 'New York'),
+    -> ('Jane Smith', '456 Oak Avenue', 'janesmith@example.com', 'Female', 25, 'California'),
+    -> ('Emily Johnson', '789 Pine Road', 'emilyj@example.com', 'Female', 40, 'Texas'),
+    -> ('Michael Brown', '101 Elm Lane', 'michaelb@example.com', 'Male', 35, 'Florida'),
+    -> ('Sarah Davis', '202 Birch Parkway', 'sarahd@example.com', 'Female', 28, 'Washington'),
+    -> ('David Wilson', '303 Cedar Blvd', 'davidw@example.com', 'Male', 45, 'Illinois'),
+    -> ('Jessica Miller', '404 Spruce Ave', 'jessicam@example.com', 'Female', 32, 'Ohio'),
+    -> ('Daniel Taylor', '505 Aspen Place', 'danielt@example.com', 'Male', 50, 'Georgia'),
+    -> ('Laura Anderson', '606 Redwood Terrace', 'lauraa@example.com', 'Female', 29, 'Michigan'),
+    -> ('Ryan White', '707 Willow Court', 'ryanw@example.com', 'Male', 27, 'Oregon');
+Query OK, 10 rows affected (0.02 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Orders (customer_id, order_date, status, total_amount) VALUES
+    -> (1, '2023-07-01', 'Shipped', 699.99),
+    -> (2, '2023-07-02', 'Processing', 49.99),
+    -> (3, '2023-07-03', 'Delivered', 899.99),
+    -> (4, '2023-07-04', 'Cancelled', 0.00),
+    -> (5, '2023-07-05', 'Shipped', 89.99),
+    -> (6, '2023-07-06', 'Processing', 12.99),
+    -> (7, '2023-07-07', 'Delivered', 59.99),
+    -> (8, '2023-07-08', 'Shipped', 4.99),
+    -> (9, '2023-07-09', 'Processing', 299.99),
+    -> (10, '2023-07-10', 'Delivered', 29.99);
+Query OK, 10 rows affected (0.02 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO OrderDetails (order_id, product_id, quantity) VALUES
+    -> (1, 1, 1),
+    -> (2, 2, 1),
+    -> (3, 3, 1),
+    -> (4, 4, 1),
+    -> (5, 5, 1),
+    -> (6, 6, 1),
+    -> (7, 7, 1),
+    -> (8, 8, 1),
+    -> (9, 9, 1),
+    -> (10, 10, 1);
+Query OK, 10 rows affected (0.01 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO ShippingInfo (order_id, label, tracking_number) VALUES
+    -> (1, 'UPS Shipping Label', '1Z999AA10123456784'),
+    -> (2, 'FedEx Shipping Label', '999999999999'),
+    -> (3, 'DHL Shipping Label', 'JD0123456789101112'),
+    -> (5, 'UPS Shipping Label', '1Z999AA10123456785'),
+    -> (7, 'FedEx Shipping Label', '999999999910'),
+    -> (8, 'DHL Shipping Label', 'JD0123456789101113'),
+    -> (9, 'UPS Shipping Label', '1Z999AA10123456786'),
+    -> (10, 'FedEx Shipping Label', '999999999911');
+Query OK, 8 rows affected (0.01 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Inventory (product_id, quantity) VALUES
+    -> (1, 50),
+    -> (2, 100),
+    -> (3, 30),
+    -> (4, 200),
+    -> (5, 75),
+    -> (6, 120),
+    -> (7, 60),
+    -> (8, 150),
+    -> (9, 40),
+    -> (10, 85);
+Query OK, 10 rows affected (0.04 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Categories;
++-------------+-------------+------------------------------------+
+| category_id | name        | description                        |
++-------------+-------------+------------------------------------+
+|           1 | Electronics | Electronic devices and gadgets     |
+|           2 | Clothing    | Apparel and accessories            |
+|           3 | Home Goods  | Furniture and decor                |
+|           4 | Books       | Literary and educational materials |
+|           5 | Sports      | Sports equipment and apparel       |
+|           6 | Beauty      | Beauty and personal care products  |
+|           7 | Toys        | Toys and games for children        |
+|           8 | Groceries   | Food and household essentials      |
+|           9 | Automotive  | Automotive parts and accessories   |
+|          10 | Gardening   | Gardening tools and plants         |
++-------------+-------------+------------------------------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Customers;
++-------------+----------------+---------------------+-----------------------+--------+------+------------+
+| customer_id | name           | address             | email                 | gender | age  | location   |
++-------------+----------------+---------------------+-----------------------+--------+------+------------+
+|           1 | John Doe       | 123 Maple Street    | johndoe@example.com   | Male   |   30 | New York   |
+|           2 | Jane Smith     | 456 Oak Avenue      | janesmith@example.com | Female |   25 | California |
+|           3 | Emily Johnson  | 789 Pine Road       | emilyj@example.com    | Female |   40 | Texas      |
+|           4 | Michael Brown  | 101 Elm Lane        | michaelb@example.com  | Male   |   35 | Florida    |
+|           5 | Sarah Davis    | 202 Birch Parkway   | sarahd@example.com    | Female |   28 | Washington |
+|           6 | David Wilson   | 303 Cedar Blvd      | davidw@example.com    | Male   |   45 | Illinois   |
+|           7 | Jessica Miller | 404 Spruce Ave      | jessicam@example.com  | Female |   32 | Ohio       |
+|           8 | Daniel Taylor  | 505 Aspen Place     | danielt@example.com   | Male   |   50 | Georgia    |
+|           9 | Laura Anderson | 606 Redwood Terrace | lauraa@example.com    | Female |   29 | Michigan   |
+|          10 | Ryan White     | 707 Willow Court    | ryanw@example.com     | Male   |   27 | Oregon     |
++-------------+----------------+---------------------+-----------------------+--------+------+------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Inventory;
++------------+----------+
+| product_id | quantity |
++------------+----------+
+|          1 |       50 |
+|          2 |      100 |
+|          3 |       30 |
+|          4 |      200 |
+|          5 |       75 |
+|          6 |      120 |
+|          7 |       60 |
+|          8 |      150 |
+|          9 |       40 |
+|         10 |       85 |
++------------+----------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM OrderDetails;
++----------+------------+----------+
+| order_id | product_id | quantity |
++----------+------------+----------+
+|        1 |          1 |        1 |
+|        2 |          2 |        1 |
+|        3 |          3 |        1 |
+|        4 |          4 |        1 |
+|        5 |          5 |        1 |
+|        6 |          6 |        1 |
+|        7 |          7 |        1 |
+|        8 |          8 |        1 |
+|        9 |          9 |        1 |
+|       10 |         10 |        1 |
++----------+------------+----------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Orders;
++----------+-------------+------------+------------+--------------+
+| order_id | customer_id | order_date | status     | total_amount |
++----------+-------------+------------+------------+--------------+
+|        1 |           1 | 2023-07-01 | Shipped    |       699.99 |
+|        2 |           2 | 2023-07-02 | Processing |        49.99 |
+|        3 |           3 | 2023-07-03 | Delivered  |       899.99 |
+|        4 |           4 | 2023-07-04 | Cancelled  |         0.00 |
+|        5 |           5 | 2023-07-05 | Shipped    |        89.99 |
+|        6 |           6 | 2023-07-06 | Processing |        12.99 |
+|        7 |           7 | 2023-07-07 | Delivered  |        59.99 |
+|        8 |           8 | 2023-07-08 | Shipped    |         4.99 |
+|        9 |           9 | 2023-07-09 | Processing |       299.99 |
+|       10 |          10 | 2023-07-10 | Delivered  |        29.99 |
++----------+-------------+------------+------------+--------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Products;
++------------+----------------+---------------------------+--------+--------------+-------------+
+| product_id | name           | description               | price  | availability | category_id |
++------------+----------------+---------------------------+--------+--------------+-------------+
+|          1 | Smartphone     | High-end mobile device    | 699.99 |            1 |           1 |
+|          2 | Jeans          | Blue denim jeans          |  49.99 |            1 |           2 |
+|          3 | Sofa           | Comfortable leather sofa  | 899.99 |            1 |           3 |
+|          4 | Thriller Novel | Exciting thriller book    |  15.99 |            1 |           4 |
+|          5 | Running Shoes  | Durable athletic shoes    |  89.99 |            1 |           5 |
+|          6 | Shampoo        | Organic hair shampoo      |  12.99 |            1 |           6 |
+|          7 | Lego Set       | 1000-piece Lego set       |  59.99 |            1 |           7 |
+|          8 | Cereal         | Healthy breakfast cereal  |   4.99 |            1 |           8 |
+|          9 | Car Tires      | Set of 4 all-season tires | 299.99 |            1 |           9 |
+|         10 | Garden Shovel  | Sturdy metal shovel       |  29.99 |            1 |          10 |
++------------+----------------+---------------------------+--------+--------------+-------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM ShippingInfo;
++-------------+----------+----------------------+--------------------+
+| shipping_id | order_id | label                | tracking_number    |
++-------------+----------+----------------------+--------------------+
+|           1 |        1 | UPS Shipping Label   | 1Z999AA10123456784 |
+|           2 |        2 | FedEx Shipping Label | 999999999999       |
+|           3 |        3 | DHL Shipping Label   | JD0123456789101112 |
+|           4 |        5 | UPS Shipping Label   | 1Z999AA10123456785 |
+|           5 |        7 | FedEx Shipping Label | 999999999910       |
+|           6 |        8 | DHL Shipping Label   | JD0123456789101113 |
+|           7 |        9 | UPS Shipping Label   | 1Z999AA10123456786 |
+|           8 |       10 | FedEx Shipping Label | 999999999911       |
++-------------+----------+----------------------+--------------------+
+8 rows in set (0.00 sec)
+
+mysql>
+mysql> SELECT
+    ->     Categories.name AS Category,
+    ->     SUM(Orders.total_amount) AS TotalSales
+    -> FROM Orders
+    -> JOIN OrderDetails ON Orders.order_id = OrderDetails.order_id
+    -> JOIN Products ON OrderDetails.product_id = Products.product_id
+    -> JOIN Categories ON Products.category_id = Categories.category_id
+    -> WHERE Orders.order_date BETWEEN '2023-01-01' AND '2023-12-31'
+    -> GROUP BY Categories.name;
++-------------+------------+
+| Category    | TotalSales |
++-------------+------------+
+| Electronics |     699.99 |
+| Clothing    |      49.99 |
+| Home Goods  |     899.99 |
+| Books       |       0.00 |
+| Sports      |      89.99 |
+| Beauty      |      12.99 |
+| Toys        |      59.99 |
+| Groceries   |       4.99 |
+| Automotive  |     299.99 |
+| Gardening   |      29.99 |
++-------------+------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT
+    ->     Products.name AS Product,
+    ->     Categories.name AS Category,
+    ->     SUM(OrderDetails.quantity) AS TotalSold
+    -> FROM OrderDetails
+    -> JOIN Products ON OrderDetails.product_id = Products.product_id
+    -> JOIN Categories ON Products.category_id = Categories.category_id
+    -> JOIN Orders ON OrderDetails.order_id = Orders.order_id
+    -> WHERE Orders.order_date BETWEEN '2023-01-01' AND '2023-12-31'
+    -> GROUP BY Products.product_id
+    -> ORDER BY TotalSold DESC
+    -> LIMIT 10;
++----------------+-------------+-----------+
+| Product        | Category    | TotalSold |
++----------------+-------------+-----------+
+| Smartphone     | Electronics |         1 |
+| Jeans          | Clothing    |         1 |
+| Sofa           | Home Goods  |         1 |
+| Thriller Novel | Books       |         1 |
+| Running Shoes  | Sports      |         1 |
+| Shampoo        | Beauty      |         1 |
+| Lego Set       | Toys        |         1 |
+| Cereal         | Groceries   |         1 |
+| Car Tires      | Automotive  |         1 |
+| Garden Shovel  | Gardening   |         1 |
++----------------+-------------+-----------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT
+    ->     Customers.name,
+    ->     Customers.address,
+    ->     Customers.email,
+    ->     Customers.gender,
+    ->     Customers.age,
+    ->     Customers.location,
+    ->     Orders.order_id,
+    ->     Orders.order_date
+    -> FROM Customers
+    -> JOIN Orders ON Customers.customer_id = Orders.customer_id
+    -> ORDER BY Orders.order_date DESC;
++----------------+---------------------+-----------------------+--------+------+------------+----------+------------+
+| name           | address             | email                 | gender | age  | location   | order_id | order_date |
++----------------+---------------------+-----------------------+--------+------+------------+----------+------------+
+| Ryan White     | 707 Willow Court    | ryanw@example.com     | Male   |   27 | Oregon     |       10 | 2023-07-10 |
+| Laura Anderson | 606 Redwood Terrace | lauraa@example.com    | Female |   29 | Michigan   |        9 | 2023-07-09 |
+| Daniel Taylor  | 505 Aspen Place     | danielt@example.com   | Male   |   50 | Georgia    |        8 | 2023-07-08 |
+| Jessica Miller | 404 Spruce Ave      | jessicam@example.com  | Female |   32 | Ohio       |        7 | 2023-07-07 |
+| David Wilson   | 303 Cedar Blvd      | davidw@example.com    | Male   |   45 | Illinois   |        6 | 2023-07-06 |
+| Sarah Davis    | 202 Birch Parkway   | sarahd@example.com    | Female |   28 | Washington |        5 | 2023-07-05 |
+| Michael Brown  | 101 Elm Lane        | michaelb@example.com  | Male   |   35 | Florida    |        4 | 2023-07-04 |
+| Emily Johnson  | 789 Pine Road       | emilyj@example.com    | Female |   40 | Texas      |        3 | 2023-07-03 |
+| Jane Smith     | 456 Oak Avenue      | janesmith@example.com | Female |   25 | California |        2 | 2023-07-02 |
+| John Doe       | 123 Maple Street    | johndoe@example.com   | Male   |   30 | New York   |        1 | 2023-07-01 |
++----------------+---------------------+-----------------------+--------+------+------------+----------+------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT
+    ->     Products.name AS Product,
+    ->     Categories.name AS Category,
+    ->     Inventory.quantity AS QuantityInStock
+    -> FROM Inventory
+    -> JOIN Products ON Inventory.product_id = Products.product_id
+    -> JOIN Categories ON Products.category_id = Categories.category_id;
++----------------+-------------+-----------------+
+| Product        | Category    | QuantityInStock |
++----------------+-------------+-----------------+
+| Smartphone     | Electronics |              50 |
+| Jeans          | Clothing    |             100 |
+| Sofa           | Home Goods  |              30 |
+| Thriller Novel | Books       |             200 |
+| Running Shoes  | Sports      |              75 |
+| Shampoo        | Beauty      |             120 |
+| Lego Set       | Toys        |              60 |
+| Cereal         | Groceries   |             150 |
+| Car Tires      | Automotive  |              40 |
+| Garden Shovel  | Gardening   |              85 |
++----------------+-------------+-----------------+
+10 rows in set (0.00 sec)
+
+mysql>
